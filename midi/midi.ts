@@ -1,8 +1,7 @@
 export class Midi {
-  private midiAccess: WebMidi.MIDIAccess;
-
-  constructor(midiAccess: WebMidi.MIDIAccess) {
-    this.midiAccess = midiAccess;
+  constructor(
+    private midiAccess: WebMidi.MIDIAccess
+  ) {
   }
 
   // debug methods

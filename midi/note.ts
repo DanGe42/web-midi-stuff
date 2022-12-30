@@ -69,13 +69,12 @@ export function parseNote(noteString: string): NoteNotation {
 }
 
 export class SimpleNote {
-  readonly name: string;
-  readonly accidental: Accidental;
   private readonly toneIndex: number;
 
-  constructor(name: string, accidental: Accidental) {
-    this.name = name;
-    this.accidental = accidental;
+  constructor(
+    readonly name: string,
+    readonly accidental: Accidental
+  ) {
     this.toneIndex = calcToneIndex(name, accidental);
   }
 
