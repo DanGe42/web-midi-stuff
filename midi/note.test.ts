@@ -36,6 +36,24 @@ test('parse accidentals', () => {
   expect(note.octave).toBe(1);
 })
 
+test('given all 12 semitones, adding a half step each shifts all tones', () => {
+  const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
+    .map(tone => SimpleNote.parseNote(tone));
+  const halfStepped = notes.map(note => note.halfStep());
+  const shiftedNotes = ["A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"]
+    .map(tone => SimpleNote.parseNote(tone));
+  expect(halfStepped).toEqual(shiftedNotes);
+});
+
+test('given all 12 semitones, subtracting a half step each shifts all tones', () => {
+  const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
+    .map(tone => SimpleNote.parseNote(tone));
+  const halfStepped = notes.map(note => note.halfStep(-1));
+  const shiftedNotes = ["G#", "A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G"]
+    .map(tone => SimpleNote.parseNote(tone));
+  expect(halfStepped).toEqual(shiftedNotes);
+});
+
 interface FifthTest {
   readonly note: string;
   readonly fifth: string;
@@ -98,22 +116,3 @@ interface MajorScalesTest {
   // { tonic: "Bb", scale: "F" },
   { tonic: "B", scale: "F#" },
 ] as readonly MajorScalesTest[])
-
-// test('given a note, a half step gets the next tone', () => {
-//   const note = Note.fromName('D');
-//   expect(note.halfStep()).toEqual(Note.fromName('D#'));
-// });
-
-// test('given a note, an octave results in the same note name', () => {
-//   const note = Note.fromName('D#');
-//   expect(note.octave()).toEqual(Note.fromName('D#'));
-// })
-
-// test('given all 12 tones, adding a half step each shifts all tones', () => {
-//   const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
-//     .map(tone => Note.fromName(tone));
-//   const halfStepped = notes.map(note => note.halfStep());
-//   const shiftedNotes = ["A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"]
-//     .map(tone => Note.fromName(tone));
-//   expect(halfStepped).toEqual(shiftedNotes);
-// });

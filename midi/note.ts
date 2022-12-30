@@ -96,7 +96,7 @@ export class SimpleNote {
     let newToneIndex = (this.toneIndex + steps) % semitones.length;
     if (newToneIndex < 0) {
       // Handle going into negatives (because modulo of negatives is negative)
-      newToneIndex + semitones.length;
+      newToneIndex = newToneIndex + semitones.length;
     }
 
     // What do we call this new note now?
