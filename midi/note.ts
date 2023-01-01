@@ -1,5 +1,13 @@
-import { Accidental, parseNote } from "./notation";
-import { TonePosition, calculateTonePosition, tonesEquivalent, inferNote, MidiPosition, calculateMidiPosition, calculateMidiOctave } from "./semitones";
+import { Accidental, accidentalString, parseNote } from "./notation";
+import {
+  MidiPosition,
+  TonePosition,
+  calculateMidiOctave,
+  calculateMidiPosition,
+  calculateTonePosition,
+  inferNote,
+  tonesEquivalent,
+} from "./semitones";
 
 export interface Note<T> {
   readonly name: string;
@@ -61,6 +69,10 @@ export class SimpleNote implements Note<SimpleNote> {
     }
     return this.halfStep(steps * 12);
   }
+
+  toString(): string {
+    return `${this.name}${accidentalString(this.accidental)}`;
+  }
 }
 
 export class MidiNote implements Note<MidiNote> {
@@ -117,5 +129,9 @@ export class MidiNote implements Note<MidiNote> {
       steps = 1;
     }
     return this.halfStep(steps * 12);
+  }
+
+  toString(): string {
+    return `${this.name}${accidentalString(this.accidental)}${this.octave}`;
   }
 }
