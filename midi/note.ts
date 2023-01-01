@@ -1,7 +1,15 @@
 import { Accidental, parseNote } from "./notation";
-import { calculateTonePosition, inferNote, TonePosition, tonesEquivalent } from "./semitones";
+import { TonePosition, calculateTonePosition, tonesEquivalent, inferNote, MidiPosition, calculateMidiPosition, calculateMidiOctave } from "./semitones";
 
-export class SimpleNote {
+export interface Note<T> {
+  readonly name: string;
+  readonly accidental: Accidental;
+
+  isEquivalentTo(other: T): boolean;
+  halfStep(steps?: number): T;
+}
+
+export class SimpleNote implements Note<SimpleNote> {
   private readonly tonePosition: TonePosition;
 
   constructor(
@@ -20,20 +28,23 @@ export class SimpleNote {
     return tonesEquivalent(this.tonePosition, other.tonePosition)
   }
 
-  halfStep(steps?: number) {
+  private preferredAccidental(): Accidental {
+    if (this.accidental === Accidental.DoubleFlat) {
+      return Accidental.Flat;
+    }
+    if (this.accidental === Accidental.DoubleSharp) {
+      return Accidental.Sharp;
+    }
+    return this.accidental;
+  }
+
+  halfStep(steps?: number): SimpleNote {
     if (typeof steps === 'undefined') {
       steps = 1;
     }
 
-    let preferredAccidental: Accidental = this.accidental;
-    if (preferredAccidental === Accidental.DoubleFlat) {
-      preferredAccidental = Accidental.Flat;
-    }
-    if (preferredAccidental === Accidental.DoubleSharp) {
-      preferredAccidental = Accidental.Sharp;
-    }
-
-    const { name: toneName, accidental } = inferNote(this.tonePosition + steps, preferredAccidental);
+    const { name: toneName, accidental } = inferNote(
+      this.tonePosition + steps, this.preferredAccidental());
     return new SimpleNote(toneName, accidental);
   }
 
@@ -44,7 +55,7 @@ export class SimpleNote {
     return this.halfStep(steps * 2);
   }
 
-  octave(steps?: number): SimpleNote {
+  octaveStep(steps?: number): SimpleNote {
     if (typeof steps === 'undefined') {
       steps = 1;
     }
@@ -52,18 +63,59 @@ export class SimpleNote {
   }
 }
 
-// function calculateMidiIndex(letter: string, accidental: Accidental, octave: number) {
-//   const letterIndex = semitones.indexOf(letter);
-//   if (letterIndex == -1) {
-//     throw new Error();
-//   }
-//   const tonePosition = letterIndex + accidental;
-//   // With knowledge of the tone, the octave, and the accidental, we can
-//   // compute the MIDI note value.
-//   // MIDI tone 0 is C-1, 127 is G9
-//   const midiNote: number = (octave + 1) * 12 + tonePosition;
-//   if (midiNote < 0 || midiNote > 127) {
-//     throw new Error("Note resulted in out of bounds MIDI note");
-//   }
-//   return midiNote;
-// }
+export class MidiNote implements Note<MidiNote> {
+  private readonly midiPosition: MidiPosition;
+
+  constructor(
+    readonly name: string,
+    readonly accidental: Accidental,
+    readonly octave: number
+  ) {
+    this.midiPosition = calculateMidiPosition(name, accidental, octave);
+  }
+
+  static parseNote(noteString: string): MidiNote {
+    const { name, accidental, octave } = parseNote(noteString);
+    return new MidiNote(name, accidental, octave);
+  }
+
+  isEquivalentTo(other: MidiNote): boolean {
+    return tonesEquivalent(this.midiPosition, other.midiPosition)
+  }
+
+  private preferredAccidental(): Accidental {
+    if (this.accidental === Accidental.DoubleFlat) {
+      return Accidental.Flat;
+    }
+    if (this.accidental === Accidental.DoubleSharp) {
+      return Accidental.Sharp;
+    }
+    return this.accidental;
+  }
+
+  halfStep(steps?: number): MidiNote {
+    if (typeof steps === 'undefined') {
+      steps = 1;
+    }
+
+    const { name: toneName, accidental } = inferNote(
+      this.midiPosition + steps, this.preferredAccidental());
+    // Since inferNote never returns Cb/Cbb or B#/Bx, this calculation should be safe
+    const newOctave = calculateMidiOctave(this.midiPosition);
+    return new MidiNote(toneName, accidental, newOctave);
+  }
+
+  fullStep(steps?: number): MidiNote {
+    if (typeof steps === 'undefined') {
+      steps = 1;
+    }
+    return this.halfStep(steps * 2);
+  }
+
+  octaveStep(steps?: number): MidiNote {
+    if (typeof steps === 'undefined') {
+      steps = 1;
+    }
+    return this.halfStep(steps * 12);
+  }
+}

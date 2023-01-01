@@ -74,3 +74,22 @@ export function inferNote(position: TonePosition, preferredAccidental?: Accident
     return { name: toneName[0], accidental: Accidental.Sharp, octave: 0 };
   }
 }
+
+export type MidiPosition = number;
+
+export function calculateMidiPosition(letter: string, accidental: Accidental, octave: number): MidiPosition {
+  const tonePosition = calculateTonePosition(letter, accidental);
+  // With knowledge of the tone, the octave, and the accidental, we can
+  // compute the MIDI note value.
+  // MIDI tone 0 is C-1, 127 is G9
+  const midiNote: number = (octave + 1) * 12 + tonePosition;
+  if (midiNote < 0 || midiNote > 127) {
+    throw new Error("Note resulted in out of bounds MIDI note");
+  }
+  return midiNote;
+}
+
+export function calculateMidiOctave(midiPosition: MidiPosition): number {
+  // NB: ~~(a/b) is a trick to force integer division
+  return ~~(midiPosition / 12) - 1;
+}

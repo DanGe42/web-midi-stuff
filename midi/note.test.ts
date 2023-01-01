@@ -52,7 +52,7 @@ interface FifthTest {
 ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'B']
   .forEach(tone => {
     test(`octave results in same tone: ${tone}`, () => {
-      expect(SimpleNote.parseNote(tone).octave()).toStrictEqual(SimpleNote.parseNote(tone));
+      expect(SimpleNote.parseNote(tone).octaveStep()).toStrictEqual(SimpleNote.parseNote(tone));
     })
   })
 

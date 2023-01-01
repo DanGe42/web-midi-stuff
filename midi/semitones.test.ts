@@ -1,5 +1,5 @@
 import { Accidental, accidentalString } from "./notation";
-import { calculateTonePosition, inferNote, TonePosition, tonesEquivalent } from "./semitones";
+import { calculateMidiOctave, calculateMidiPosition, calculateTonePosition, inferNote, MidiPosition, TonePosition, tonesEquivalent } from "./semitones";
 
 interface CalculateTonePositionTest {
   readonly letter: string;
@@ -52,4 +52,16 @@ interface InferTest {
     expect(note.name).toBe(t.expLetter);
     expect(note.accidental).toBe(t.expAcc);
   })
+})
+
+test('calculateMidiPosition', () => {
+  expect(calculateMidiPosition("F", Accidental.Sharp, 6)).toBe(90);
+  expect(calculateMidiPosition("C", Accidental.Natural, -1)).toBe(0);
+  expect(calculateMidiPosition("D", Accidental.DoubleSharp, 5)).toBe(76);
+})
+
+test('calculateMidiOctave', () => {
+  expect(calculateMidiOctave(24)).toBe(1); // C1
+  expect(calculateMidiOctave(0)).toBe(-1); // C-1
+  expect(calculateMidiOctave(90)).toBe(6); // F#6/Gb6
 })
