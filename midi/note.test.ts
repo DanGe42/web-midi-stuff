@@ -1,9 +1,10 @@
+import { Accidental } from './notation';
 import { SimpleNote } from './note';
 
 test('given all 12 semitones, adding a half step each shifts all tones', () => {
   const notes = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
     .map(tone => SimpleNote.parseNote(tone));
-  const halfStepped = notes.map(note => note.halfStep());
+  const halfStepped = notes.map(note => note.halfStep(1));
   const shiftedNotes = ["A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A"]
     .map(tone => SimpleNote.parseNote(tone));
   expect(halfStepped).toEqual(shiftedNotes);
@@ -56,27 +57,7 @@ interface FifthTest {
     })
   })
 
-interface MajorScalesTest {
-  readonly tonic: string;
-  readonly scale: string;
-}
-
-([
-  { tonic: "C", scale: "C D E F G A B C" },
-  // { tonic: "C#", scale: "G#" },
-  // { tonic: "Db", scale: "Ab" },
-  { tonic: "D", scale: "A" },
-  // { tonic: "D#", scale: "A#" },
-  // { tonic: "Eb", scale: "Bb" },
-  { tonic: "E", scale: "B" },
-  { tonic: "F", scale: "C" },
-  // { tonic: "F#", scale: "C#" },
-  // { tonic: "Gb", scale: "Db" },
-  { tonic: "G", scale: "D" },
-  // { tonic: "G#", scale: "D#" },
-  // { tonic: "Ab", scale: "Eb" },
-  { tonic: "A", scale: "E" },
-  // { tonic: "A#", scale: "F" }, // edge case
-  // { tonic: "Bb", scale: "F" },
-  { tonic: "B", scale: "F#" },
-] as readonly MajorScalesTest[])
+test('the major subdominant (4th) of F is Bb', () => {
+  expect(SimpleNote.parseNote('F').halfStep(5, Accidental.Flat))
+    .toStrictEqual(SimpleNote.parseNote('Bb'));
+})

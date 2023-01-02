@@ -9,21 +9,40 @@ import {
   tonesEquivalent,
 } from "./semitones";
 
-export interface Note<T> {
-  readonly name: string;
-  readonly accidental: Accidental;
+export abstract class Note<T> {
+  constructor(
+    readonly name: string,
+    readonly accidental:Accidental
+  ) {
+  }
 
-  isEquivalentTo(other: T): boolean;
-  halfStep(steps?: number): T;
+  abstract isEquivalentTo(other: T): boolean;
+  abstract halfStep(steps: number, preferredAccidental?: Accidental): T;
+  abstract toString(): string;
+
+  fullStep(steps?: number, preferredAccidental?: Accidental): T {
+    if (typeof steps === 'undefined') {
+      steps = 1;
+    }
+    return this.halfStep(steps * 2, preferredAccidental);
+  }
+
+  octaveStep(steps?: number): T {
+    if (typeof steps === 'undefined') {
+      steps = 1;
+    }
+    return this.halfStep(steps * 12);
+  }
 }
 
-export class SimpleNote implements Note<SimpleNote> {
+export class SimpleNote extends Note<SimpleNote> {
   private readonly tonePosition: TonePosition;
 
   constructor(
-    readonly name: string,
-    readonly accidental: Accidental
+    name: string,
+    accidental: Accidental
   ) {
+    super(name, accidental);
     this.tonePosition = calculateTonePosition(name, accidental);
   }
 
@@ -46,28 +65,11 @@ export class SimpleNote implements Note<SimpleNote> {
     return this.accidental;
   }
 
-  halfStep(steps?: number): SimpleNote {
-    if (typeof steps === 'undefined') {
-      steps = 1;
-    }
-
+  halfStep(steps: number, preferredAccidental?: Accidental): SimpleNote {
+    preferredAccidental = preferredAccidental || this.preferredAccidental();
     const { name: toneName, accidental } = inferNote(
-      this.tonePosition + steps, this.preferredAccidental());
+      this.tonePosition + steps, preferredAccidental);
     return new SimpleNote(toneName, accidental);
-  }
-
-  fullStep(steps?: number): SimpleNote {
-    if (typeof steps === 'undefined') {
-      steps = 1;
-    }
-    return this.halfStep(steps * 2);
-  }
-
-  octaveStep(steps?: number): SimpleNote {
-    if (typeof steps === 'undefined') {
-      steps = 1;
-    }
-    return this.halfStep(steps * 12);
   }
 
   toString(): string {
@@ -75,14 +77,15 @@ export class SimpleNote implements Note<SimpleNote> {
   }
 }
 
-export class MidiNote implements Note<MidiNote> {
+export class MidiNote extends Note<MidiNote> {
   private readonly midiPosition: MidiPosition;
 
   constructor(
-    readonly name: string,
-    readonly accidental: Accidental,
+    name: string,
+    accidental: Accidental,
     readonly octave: number
   ) {
+    super(name, accidental);
     this.midiPosition = calculateMidiPosition(name, accidental, octave);
   }
 
@@ -105,30 +108,13 @@ export class MidiNote implements Note<MidiNote> {
     return this.accidental;
   }
 
-  halfStep(steps?: number): MidiNote {
-    if (typeof steps === 'undefined') {
-      steps = 1;
-    }
-
+  halfStep(steps: number, preferredAccidental?: Accidental): MidiNote {
+    preferredAccidental = preferredAccidental || this.preferredAccidental();
     const { name: toneName, accidental } = inferNote(
-      this.midiPosition + steps, this.preferredAccidental());
+      this.midiPosition + steps, preferredAccidental);
     // Since inferNote never returns Cb/Cbb or B#/Bx, this calculation should be safe
     const newOctave = calculateMidiOctave(this.midiPosition);
     return new MidiNote(toneName, accidental, newOctave);
-  }
-
-  fullStep(steps?: number): MidiNote {
-    if (typeof steps === 'undefined') {
-      steps = 1;
-    }
-    return this.halfStep(steps * 2);
-  }
-
-  octaveStep(steps?: number): MidiNote {
-    if (typeof steps === 'undefined') {
-      steps = 1;
-    }
-    return this.halfStep(steps * 12);
   }
 
   toString(): string {
